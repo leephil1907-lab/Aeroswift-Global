@@ -7,6 +7,10 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    domains:
+      - aeroswift.com
+      - www.aeroswift.com
+      - admin.aeroswift.com
     autoDeploy: true
     envVars:
       - key: NODE_ENV
@@ -22,17 +26,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: ADMIN_HOST
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
-      - key: AEROSWIFT_ENQUIRY_TO
-        sync: false
-      - key: AEROSWIFT_ENQUIRY_FROM
-        sync: false
-      - key: KARRIO_API_URL
-        sync: false
-      - key: KARRIO_API_KEY
-        sync: false
+        value: admin.aeroswift.com
 
 databases:
   - name: aeroswift-db
