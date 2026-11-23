@@ -72,8 +72,77 @@ const steps = [
  {eyebrow:'WAREHOUSING / 05',title:'Ready when',accent:'you are.',copy:'Organised handling and practical coordination help your goods move through each stage.'},
  {eyebrow:'THE NEXT MOVE / 06',title:'Your world.',accent:'In motion.',copy:'Tell us what you need to move. Our team will help you plan the next step.'}
 ]
-function TrackingWidget(){const [tracking,setTracking]=useState('');const [loading,setLoading]=useState(false);const [error,setError]=useState('');const [result,setResult]=useState<any>(null);const run=async(e:React.FormEvent)=>{e.preventDefault();setLoading(true);setError('');setResult(null);try{const r=await fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trackingNumber:tracking.trim()})});const d=await r.json();if(!r.ok)throw new Error(d.message||d.error||'Tracking could not be retrieved.');setResult(d.tracker)}catch(e:any){setError(e.message||'Tracking is temporarily unavailable.')}finally{setLoading(false)}};return <form className="cin-track" onSubmit={run}><label htmlFor="hero-track">Track a shipment</label><div className="cin-track-row"><Search size={17}/><input id="hero-track" value={tracking} onChange={e=>setTracking(e.target.value)} placeholder="Enter tracking number" minLength={4} required/><button aria-label="Search tracking number" disabled={loading}>{loading?'…':<ArrowRight/>}</button></div>{error&&<small role="alert">{error}</small>}{result&&<div className="cin-track-result"><b>{result.status||'Shipment update'}</b><span>{result.events?.[0]?.description||'Latest carrier update received.'}</span><a href="/track">View full tracking <ArrowRight size={13}/></a></div>}</form>}
-function QuoteWidget(){const [form,setForm]=useState({name:'',email:'',origin:'Lagos',destination:'London',weight:'5',length:'30',width:'20',height:'15',service:'air'});const [sent,setSent]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const rates={air:8.4,sea:2.1,road:4.2,express:12};const estimate=useMemo(()=>{const w=Math.max(1,Number(form.weight)||1);const volumetric=(Number(form.length)*Number(form.width)*Number(form.height))/5000;const base={air:8.4,sea:2.1,road:4.2,express:12}[form.service as keyof typeof rates]||8.4;return Math.round((Math.max(w,volumetric)*base+18)*100)/100},[form]);const change=(key:string,value:string)=>setForm(p=>({...p,[key]:value}));const submit=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setError('');try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:form.name,email:form.email,topic:'Shipping quote request',message:`Origin: ${form.origin}\nDestination: ${form.destination}\nWeight: ${form.weight} kg\nDimensions: ${form.length}×${form.width}×${form.height} cm\nService: ${form.service}\nIndicative calculator estimate: ${estimate} (not a confirmed tariff).\nPlease contact the customer to confirm details.`,source:'homepage-quote'})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Quote request could not be submitted.');setSent(true)}catch(e:any){setError(e.message)}finally{setBusy(false)}};return <div className="cin-quote"><div className="cin-quote-head"><span>INSTANT QUOTE PLANNER</span><b>Plan your shipment</b><small>Indicative estimate only. Final rates require confirmation.</small></div>{sent?<div className="cin-quote-success"><CheckCircle2/><b>Request received</b><p>The AeroSwift team can follow up to confirm your route and shipment details.</p></div>:<form onSubmit={submit}><div className="cin-quote-grid"><label>Your name<input value={form.name} onChange={e=>change('name',e.target.value)} required/></label><label>Email address<input type="email" value={form.email} onChange={e=>change('email',e.target.value)} required/></label><label>Origin<input value={form.origin} onChange={e=>change('origin',e.target.value)} required/></label><label>Destination<input value={form.destination} onChange={e=>change('destination',e.target.value)} required/></label><label>Weight (kg)<input type="number" min="0.1" step=".1" value={form.weight} onChange={e=>change('weight',e.target.value)} required/></label><label>Service<select value={form.service} onChange={e=>change('service',e.target.value)}><option value="air">Air freight</option><option value="sea">Sea freight</option><option value="road">Road</option><option value="express">Express</option></select></label><label>Length (cm)<input type="number" value={form.length} onChange={e=>change('length',e.target.value)}/></label><label>Width (cm)<input type="number" value={form.width} onChange={e=>change('width',e.target.value)}/></label><label>Height (cm)<input type="number" value={form.height} onChange={e=>change('height',e.target.value)}/></label></div><div className="cin-estimate"><span>Indicative estimate</span><b>USD {estimate.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div>{error&&<small role="alert">{error}</small>}<button className="cin-button" disabled={busy}>{busy?'Submitting…':'Request confirmed quote'} <ArrowUpRight size={16}/></button></form>}</div>}
+function TrackingWidget(){
+ const [tracking,setTracking]=useState('');
+ const [carrier,setCarrier]=useState('');
+ const [needsCarrier,setNeedsCarrier]=useState(false);
+ const [loading,setLoading]=useState(false);
+ const [error,setError]=useState('');
+ const [result,setResult]=useState<any>(null);
+ const carriers=[['dhl_express','DHL Express'],['aramex','Aramex'],['fedex','FedEx'],['ups','UPS'],['tnt','TNT'],['seko','SEKO'],['royalmail','Royal Mail'],['usps','USPS'],['canadapost','Canada Post'],['dpd','DPD'],['geodis','GEODIS'],['generic','Other supported carrier']];
+ const run=async(e:React.FormEvent)=>{
+  e.preventDefault();setLoading(true);setError('');setResult(null);
+  try{
+   const r=await fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trackingNumber:tracking.trim(),carrier:carrier||undefined})});
+   const d=await r.json().catch(()=>({}));
+   if(r.status===409&&d.needsCarrier){setNeedsCarrier(true);setError(d.message||'Select the carrier shown on your shipping receipt.');return}
+   if(!r.ok)throw new Error(d.message||d.error||'Tracking could not be retrieved.');
+   setResult(d.tracker);setNeedsCarrier(false);
+  }catch(e:any){setError(e.message||'Tracking is temporarily unavailable.')}
+  finally{setLoading(false)}
+ };
+ return <form className="cin-track" onSubmit={run}>
+  <label htmlFor="hero-track">Track a shipment</label>
+  <div className="cin-track-row"><Search size={17}/><input id="hero-track" value={tracking} onChange={e=>{setTracking(e.target.value);setResult(null);setError('');setNeedsCarrier(false)}} placeholder="Enter tracking number" minLength={4} maxLength={80} required/><button aria-label="Search tracking number" disabled={loading}>{loading?'…':<ArrowRight/>}</button></div>
+  {needsCarrier&&<div className="cin-carrier-select"><label htmlFor="hero-carrier">Select your carrier</label><select id="hero-carrier" value={carrier} onChange={e=>setCarrier(e.target.value)} required><option value="">Choose carrier</option>{carriers.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><button className="cin-outline" type="submit" disabled={loading||!carrier}>Retry tracking <ArrowRight size={14}/></button></div>}
+  {error&&<small role="alert">{error}</small>}
+  {result&&<div className="cin-track-result"><b>{result.status||'Shipment update'}</b><span>{result.events?.[0]?.description||'Latest carrier update received.'}</span><a href="/track">View full tracking <ArrowRight size={13}/></a></div>}
+ </form>
+}
+function QuoteWidget(){
+ const [form,setForm]=useState({name:'',email:'',origin:'Lagos',destination:'London',weight:'5',length:'30',width:'20',height:'15',service:'air'});
+ const [sent,setSent]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
+ const chargeableWeight=useMemo(()=>{
+  const actual=Math.max(.1,Number(form.weight)||.1);
+  const length=Math.max(0,Number(form.length)||0),width=Math.max(0,Number(form.width)||0),height=Math.max(0,Number(form.height)||0);
+  const volumetric=(length*width*height)/5000;
+  return Math.ceil(Math.max(actual,volumetric)*10)/10;
+ },[form.weight,form.length,form.width,form.height]);
+ const change=(key:string,value:string)=>setForm(p=>({...p,[key]:value}));
+ const submit=async(e:React.FormEvent)=>{
+  e.preventDefault();setBusy(true);setError('');
+  try{
+   const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:form.name,email:form.email,topic:'Shipping quote request',message:`Origin: ${form.origin}
+Destination: ${form.destination}
+Actual weight: ${form.weight} kg
+Estimated chargeable weight: ${chargeableWeight} kg
+Dimensions: ${form.length}×${form.width}×${form.height} cm
+Preferred service: ${form.service}
+Please provide a carrier-confirmed quote. No live tariff has been calculated.`,source:'homepage-quote'})});
+   const d=await r.json();if(!r.ok)throw new Error(d.error||'Quote request could not be submitted.');setSent(true)
+  }catch(e:any){setError(e.message)}finally{setBusy(false)}
+ };
+ return <div className="cin-quote">
+  <div className="cin-quote-head"><span>SHIPMENT PLANNER</span><b>Plan your shipment</b><small>Calculate chargeable weight and request a confirmed carrier quote. No invented or indicative freight prices.</small></div>
+  {sent?<div className="cin-quote-success"><CheckCircle2/><b>Request received</b><p>The AeroSwift team can follow up to confirm your route, carrier and final shipping price.</p></div>:<form onSubmit={submit}>
+   <div className="cin-quote-grid">
+    <label>Your name<input value={form.name} onChange={e=>change('name',e.target.value)} required/></label>
+    <label>Email address<input type="email" value={form.email} onChange={e=>change('email',e.target.value)} required/></label>
+    <label>Origin<input value={form.origin} onChange={e=>change('origin',e.target.value)} required/></label>
+    <label>Destination<input value={form.destination} onChange={e=>change('destination',e.target.value)} required/></label>
+    <label>Actual weight (kg)<input type="number" min="0.1" step=".1" value={form.weight} onChange={e=>change('weight',e.target.value)} required/></label>
+    <label>Preferred service<select value={form.service} onChange={e=>change('service',e.target.value)}><option value="air">Air freight</option><option value="sea">Sea freight</option><option value="road">Road</option><option value="express">Express</option></select></label>
+    <label>Length (cm)<input type="number" min="0" value={form.length} onChange={e=>change('length',e.target.value)}/></label>
+    <label>Width (cm)<input type="number" min="0" value={form.width} onChange={e=>change('width',e.target.value)}/></label>
+    <label>Height (cm)<input type="number" min="0" value={form.height} onChange={e=>change('height',e.target.value)}/></label>
+   </div>
+   <div className="cin-estimate"><span>Estimated chargeable weight</span><b>{chargeableWeight.toLocaleString('en-US',{maximumFractionDigits:1})} kg</b></div>
+   <small className="cin-quote-disclaimer">Weight estimate only. Carrier rates, surcharges, taxes and availability must be confirmed separately.</small>
+   {error&&<small role="alert">{error}</small>}
+   <button className="cin-button" disabled={busy}>{busy?'Submitting…':'Request carrier-confirmed quote'} <ArrowUpRight size={16}/></button>
+  </form>}
+ </div>
+}
 function HubMap(){const [selected,setSelected]=useState(hubs[0]);return <div className="cin-hub-map"><div className="cin-map-visual"><div className="cin-map-globe"/>{hubs.map(h=><button key={h.name} className={'cin-hub '+(selected.name===h.name?'active':'')} style={{left:(50+(h.x*13))+'%',top:(50-(h.y*27))+'%'}} onClick={()=>setSelected(h)} aria-label={'View '+h.name+' hub'}><span/>{h.name}</button>)}</div><div className="cin-hub-info"><span>HUB DETAILS</span><b>{selected.name}</b><p>{selected.service}</p><small>{selected.time} — contact AeroSwift for current schedules and transit estimates.</small><a href="/contact">Enquire about this route <ArrowRight size={14}/></a></div></div>}
 function CinematicHome(){const [chapter,setChapter]=useState(0);const [menu,setMenu]=useState(false);const [dark,setDark]=useState(true);const [cookie,setCookie]=useState(()=>typeof localStorage!=='undefined'?localStorage.getItem('aero-cookie')==='yes':true);const [reduced,setReduced]=useState(false);const root=useRef<HTMLDivElement>(null);const canvasWrap=useRef<HTMLDivElement>(null);const [low,setLow]=useState(false);
  useEffect(()=>{const mq=window.matchMedia('(prefers-reduced-motion: reduce)');const set=()=>setReduced(mq.matches);set();mq.addEventListener?.('change',set);const lowEnd=(navigator.hardwareConcurrency||4)<=4||window.matchMedia('(max-width: 760px)').matches;setLow(lowEnd);return()=>mq.removeEventListener?.('change',set)},[]);
