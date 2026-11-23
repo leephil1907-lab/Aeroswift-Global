@@ -1,15 +1,26 @@
 {
   "name": "aeroswift-global",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "docx": "^9.5.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pdfkit": "^0.17.2",
+    "pg": "^8.16.3",
+    "resend": "^6.1.2",
     "framer-motion": "^12.23.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
