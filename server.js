@@ -229,17 +229,19 @@ app.post("/api/track",async(req,res)=>{
    r=await fetch(apiUrl+"/v1/trackers",{method:"POST",headers,body:JSON.stringify({tracking_number:trackingNumber,carrier_name:carrier}),signal:AbortSignal.timeout(18000)});
   }
   const payload=await r.json().catch(()=>({}));if(!r.ok)return res.status(422).json({error:payload.detail||payload.message||"The carrier could not locate this shipment."});
-  const t=payload;return res.json({tracker:{id:t.id,trackingNumber:t.tracking_number,carrier:t.carrier_name,carrierName:t.carrier_id||t.carrier_name,status:t.status||"unknown",delivered:Boolean(t.delivered),estimatedDelivery:t.estimated_delivery||t.info?.expected_delivery||null,info:t.info||{},events:Array.isArray(t.events)?t.events.map(e=>({date:e.date||null,time:e.time||null,description:e.description||e.code||"Shipment update",location:e.location||null,code:e.code||null,latitude:Number.isFinite(Number(e.latitude))?Number(e.latitude):null,longitude:Number.isFinite(Number(e.longitude))?Number(e.longitude):null})):[],source:t.info?.source||"Carrier tracking network",testMode:Boolean(t.test_mode)}});
+  const t=payload;return res.json({tracker:{id:t.id,trackingNumber:t.tracking_number,carrier:t.carrier_name,carrierName:t.carrier_id||t.carrier_name,status:t.status||"unknown",delivered:Boolean(t.delivered),estimatedDelivery:t.estimated_delivery||t.info?.expected_delivery||null,info:t.info||{},events:Array.isArray(t.events)?t.events.map(e=>({date:e.date||null,time:e.time||null,description:e.description||e.code||"Shipment update",location:e.location||null,code:e.code||null,latitude:e.latitude!==null&&e.latitude!==undefined&&Number.isFinite(Number(e.latitude))?Number(e.latitude):null,longitude:e.longitude!==null&&e.longitude!==undefined&&Number.isFinite(Number(e.longitude))?Number(e.longitude):null})):[],source:t.info?.source||"Carrier tracking network",testMode:Boolean(t.test_mode)}});
  }catch(error){console.error("Carrier tracking error",error);res.status(502).json({error:"Carrier tracking is temporarily unavailable."});}
 });
 
-app.get("*",(req,res)=>{
+app.use((req,res,next)=>{
  const host=req.hostname.toLowerCase();
- if(ADMIN_HOST && host===ADMIN_HOST) return res.sendFile(path.join(__dirname,"dist/admin.html"));
- if(host.startsWith("admin.")) return res.sendFile(path.join(__dirname,"dist/admin.html"));
- if(req.path==="/admin"||req.path.startsWith("/admin/")||req.path==="/admin.html") return res.status(404).send("Not found");
- res.sendFile(path.join(__dirname,"dist/index.html"));
+ const isAdminHost=(ADMIN_HOST && host===ADMIN_HOST)||host.startsWith("admin.");
+ if(isAdminHost && req.path==="/") return res.sendFile(path.join(__dirname,"dist/admin.html"));
+ if(!isAdminHost && (req.path==="/admin"||req.path.startsWith("/admin/")||req.path==="/admin.html")) return res.status(404).send("Not found");
+ next();
 });
+app.use(express.static(path.join(__dirname,"dist"),{index:false,fallthrough:true}));
+app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"dist/index.html")));
 
 await initDatabase();
 app.listen(PORT,"0.0.0.0",()=>console.log(`AeroSwift listening on ${PORT}`));
