@@ -1,0 +1,7 @@
+/* Shared, accessible brand refinements for the refreshed public site. */
+.aeroswift-logo{display:block;width:182px;height:auto;max-height:45px;object-fit:contain}
+.header .brand{min-width:182px}
+.footer-brand .aeroswift-logo{width:190px;filter:grayscale(1) brightness(0) invert(1)}
+.skip-link{position:fixed;z-index:100;top:10px;left:10px;padding:12px 16px;background:#fff;color:#102a47;font-size:13px;font-weight:700;transform:translateY(-150%);transition:transform .2s;box-shadow:0 5px 20px #00152a33}
+.skip-link:focus{transform:translateY(0)}
+@media(max-width:700px){.aeroswift-logo{width:158px}.header .brand{min-width:158px}}

@@ -149,6 +149,10 @@ app.get("/api/customer/shipments",auth,async(req,res)=>{
  const rows=await query("SELECT id,tracking_number,carrier,status,estimated_delivery,created_at FROM shipments WHERE customer_id=$1 ORDER BY created_at DESC",[req.user.id]);
  res.json({shipments:rows.rows});
 });
+app.get("/api/customer/flight-enquiries",auth,async(req,res)=>{
+ const rows=await query("SELECT id,topic,message,status,created_at,updated_at FROM enquiries WHERE email=$1 AND source='flight-enquiry' ORDER BY created_at DESC LIMIT 50",[req.user.email]);
+ res.json({flightEnquiries:rows.rows});
+});
 app.get("/api/admin/overview",auth,adminOnly,async(_req,res)=>{
  const [enquiries,tickets,shipments,customers,documents]=await Promise.all([
  query("SELECT count(*)::int AS count FROM enquiries WHERE status<>'archived'"),
