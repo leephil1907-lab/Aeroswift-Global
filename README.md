@@ -9,6 +9,11 @@ A responsive, multi-page website foundation for AeroSwift Global, focused on air
 - Lucide icons
 - Responsive CSS with reduced-motion support
 
+## Visual direction
+- Premium aviation-led hero with photographic airport, aircraft and cargo imagery.
+- Dedicated image sections for air freight, airport operations, warehouse handling and flight services.
+- Responsive service cards, photography mosaic, process sections and customer-portal entry point.
+
 ## Pages
 - Overview
 - Air freight
