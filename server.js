@@ -182,6 +182,7 @@ app.patch("/api/admin/tickets/:id",auth,adminOnly,async(req,res)=>{
  if(!["open","waiting_admin","waiting_customer","resolved","closed"].includes(status)||!["low","normal","high","urgent"].includes(priority)) return res.status(400).json({error:"Invalid ticket status or priority."});
  await query("UPDATE tickets SET status=$1,priority=$2,updated_at=now() WHERE id=$3",[status,priority,req.params.id]); res.json({ok:true});
 });
+app.get("/api/admin/customers",auth,adminOnly,async(_req,res)=>{const r=await query("SELECT id,name,email,active,created_at FROM users WHERE role='customer' ORDER BY created_at DESC LIMIT 300");res.json({customers:r.rows});});
 app.get("/api/admin/shipments",auth,adminOnly,async(_req,res)=>{const r=await query("SELECT s.*,u.name AS customer_name,u.email AS customer_email FROM shipments s LEFT JOIN users u ON u.id=s.customer_id ORDER BY s.created_at DESC LIMIT 200");res.json({shipments:r.rows});});
 app.post("/api/admin/shipments",auth,adminOnly,async(req,res)=>{
  const tracking=clean(req.body?.trackingNumber,100),carrier=clean(req.body?.carrier,80),customerEmail=clean(req.body?.customerEmail,180).toLowerCase();
