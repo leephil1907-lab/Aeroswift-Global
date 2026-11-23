@@ -86,7 +86,7 @@ function CinematicHome(){const [chapter,setChapter]=useState(0);const [menu,setM
  <main id="main-content">
  <section className="cin-story">
  <div className="cin-canvas cin-photo-canvas" ref={canvasWrap}>
- <div className="cin-photo-scene" style={{backgroundImage:`url("${[
+ <div key={chapter} className="cin-photo-scene" style={{backgroundImage:`url("${[
  'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=88',
  'https://images.unsplash.com/photo-1494412519320-aa613dfb7738?auto=format&fit=crop&w=2400&q=88',
  'https://images.unsplash.com/photo-1578575437130-52799be6f3e5?auto=format&fit=crop&w=2400&q=88',
