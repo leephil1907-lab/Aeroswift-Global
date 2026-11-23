@@ -101,7 +101,7 @@ app.post("/api/auth/login", async (req, res) => {
 app.post("/api/auth/logout", (_req, res) => { res.clearCookie("aeroswift_session", tokenCookie); res.json({ ok: true }); });
 app.get("/api/auth/me", auth, (req, res) => res.json({ user: publicUser(req.user) }));
 
-app.post("/api/enquiries", async (req, res) => {
+async function createEnquiry(req, res) {
   const name = clean(req.body?.name,120), email = clean(req.body?.email,180).toLowerCase(), topic = clean(req.body?.topic || "General enquiry",120), message = clean(req.body?.message,5000);
   if (clean(req.body?.website,200)) return res.json({ ok: true });
   if (name.length < 2 || !emailValid(email) || message.length < 5) return res.status(400).json({ error: "Enter your name, a valid email address and a message." });
@@ -110,8 +110,9 @@ app.post("/api/enquiries", async (req, res) => {
     await sendEmail({ to: process.env.AEROSWIFT_ENQUIRY_TO, subject: "AeroSwift enquiry: " + topic, text: `New website enquiry #${result.rows[0].id}\nName: ${name}\nEmail: ${email}\nTopic: ${topic}\n\n${message}`, replyTo: email });
     res.status(201).json({ ok: true, reference: result.rows[0].id, message: "Your enquiry has been received. The AeroSwift team will follow up." });
   } catch (error) { console.error(error); res.status(500).json({ error: "Your enquiry could not be saved. Please try again." }); }
-});
-app.post("/api/contact", (req,res,next) => { req.url="/api/enquiries"; next(); });
+}
+app.post("/api/enquiries", createEnquiry);
+app.post("/api/contact", createEnquiry);
 
 app.post("/api/support/tickets", auth, async (req,res) => {
   const subject=clean(req.body?.subject,180), message=clean(req.body?.message,5000), category=clean(req.body?.category || "General",80);
