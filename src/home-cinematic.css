@@ -6,3 +6,12 @@
 .cin-logo-image{display:block;width:190px;height:auto;max-height:48px;object-fit:contain}
 .cin-brand{min-width:190px}
 @media(max-width:680px){.aeroswift-logo,.cin-logo-image{width:158px}.brand{min-width:158px}}
+
+/* Real-world logistics photography replaces the procedural 3D hero scenes. */
+.cin-photo-canvas{overflow:hidden;background:#050b1a}
+.cin-photo-scene{position:absolute;inset:0;background-size:cover;background-position:center 48%;background-repeat:no-repeat;animation:cin-photo-arrive 1.1s cubic-bezier(.2,.65,.25,1) both;will-change:transform,opacity}
+.cin-photo-scene:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,9,22,.9) 0%,rgba(3,9,22,.68) 34%,rgba(3,9,22,.18) 75%,rgba(3,9,22,.12) 100%),linear-gradient(0deg,rgba(3,9,22,.55),transparent 38%,rgba(3,9,22,.16))}
+.cin-story-vignette{background:linear-gradient(90deg,rgba(5,11,26,.35),transparent 62%),linear-gradient(0deg,#050b1a 0%,transparent 20%,transparent 82%,#050b1a55)}
+@keyframes cin-photo-arrive{from{opacity:.35;transform:scale(1.045)}to{opacity:1;transform:scale(1)}}
+@media(max-width:680px){.cin-photo-scene{background-position:58% center}.cin-photo-scene:after{background:linear-gradient(90deg,rgba(3,9,22,.78),rgba(3,9,22,.42) 72%,rgba(3,9,22,.25)),linear-gradient(0deg,rgba(3,9,22,.5),transparent 45%)}}
+@media(prefers-reduced-motion:reduce){.cin-photo-scene{animation:none}}
