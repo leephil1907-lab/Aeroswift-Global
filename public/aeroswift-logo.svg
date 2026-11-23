@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 92" role="img" aria-labelledby="title desc">
+<title id="title">AeroSwift Global</title><desc id="desc">AeroSwift Global wordmark with a forward-motion wing symbol.</desc>
+<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4B83FF"/><stop offset="1" stop-color="#1D4FD7"/></linearGradient></defs>
+<g transform="translate(4 7)">
+ <path d="M39 4 4 72h17l18-35 18 35h17L39 4Z" fill="url(#a)"/>
+ <path d="M40 43h43L71 55H34l6-12Z" fill="#FFB020"/>
+ <path d="M46 28h39L73 39H40l6-11Z" fill="#7EA5FF"/>
+ <path d="M54 15h31L73 24H49l5-9Z" fill="#B5CCFF"/>
+ <path d="M4 78h79" stroke="#8EAFFF" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+</g>
+<g fill="#F7FAFF" font-family="Inter,Arial,sans-serif">
+ <text x="105" y="47" font-size="36" font-weight="800" letter-spacing="1.2">AERO<tspan fill="#8EAEFF">SWIFT</tspan></text>
+ <text x="108" y="69" font-size="11" font-weight="700" letter-spacing="6" fill="#FFB020">GLOBAL LOGISTICS</text>
+</g></svg>
